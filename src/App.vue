@@ -5,7 +5,11 @@ import { ref } from 'vue';
 
 import HelloWorld from './components/HelloWorld.vue'
 
-const imgUrl = ref('/' + process.env.ENVIRONMENT + '/assets/vue.svg')
+let environment = import.meta.env.VITE_ENVIRONMENT
+if (import.meta.env.SSR) {
+  environment = process.env.ENVIRONMENT
+}
+const imgUrl = ref('/' + environment + '/assets/vue.svg')
 </script>
 
 <template>
