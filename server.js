@@ -4,7 +4,8 @@ import express from 'express'
 // Constants
 const isProduction = process.env.NODE_ENV === 'production'
 const port = process.env.PORT || 5173
-const base = process.env.BASE || '/'
+const environment = process.env.ENVIRONMENT
+const base = `/${environment}/` || '/'
 
 // Cached production assets
 const templateHtml = isProduction
@@ -35,7 +36,7 @@ if (!isProduction) {
 }
 
 // Serve HTML
-app.use('*', async (req, res) => {
+app.use(`/${environment}/*`, async (req, res) => {
   try {
     const url = req.originalUrl.replace(base, '')
 
@@ -57,12 +58,12 @@ app.use('*', async (req, res) => {
 
     res.status(200).set({ 'Content-Type': 'text/html' })
 
-    res.write(htmlStart)
+    res.write(htmlStart.replaceAll('ENVIRONMENT_TOKEN', environment))
     for await (const chunk of stream) {
       if (res.closed) break
       res.write(chunk)
     }
-    res.write(htmlEnd)
+    res.write(htmlEnd.replace('ENVIRONMENT_TOKEN', environment))
     res.end()
   } catch (e) {
     vite?.ssrFixStacktrace(e)
@@ -73,5 +74,6 @@ app.use('*', async (req, res) => {
 
 // Start http server
 app.listen(port, () => {
+  console.log('environment = ', environment)
   console.log(`Server started at http://localhost:${port}`)
 })
